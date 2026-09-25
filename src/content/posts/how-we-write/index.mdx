@@ -4,11 +4,11 @@ description: A short reference for everyone who writes on this blog. Every build
 date: 2026-09-10
 authors:
   - { author: oyku, roles: [writing] }
-  - { author: deniz, roles: [editing, review] }
+  - { author: tahsin, roles: [editing, review] }
 tags: [guide]
 ---
 
-import ciDuration from '../three-weeks-in-a-monorepo/ci-duration.png';
+import ciDuration from './ci-duration.png';
 
 Every post is a folder under `src/content/posts/`. The folder name becomes the address, and `index.mdx` inside it holds the text. Images live in the same folder.
 
@@ -21,7 +21,7 @@ Everyone who worked on a post goes into the front matter with their role. The by
 ```yaml
 authors:
   - { author: oyku, roles: [writing] }
-  - { author: deniz, roles: [editing, review] }
+  - { author: tahsin, roles: [editing, review] }
 ```
 
 Roles: `writing`, `editing`, `code`, `illustration`, `research`, `review`. The author id is the file name in `src/content/authors/`. A typo in an id stops the build, so a post can never credit someone who does not exist.
