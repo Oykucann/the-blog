@@ -1,0 +1,44 @@
+---
+import type { Author } from '../utils/posts';
+import { initials } from '../utils/posts';
+
+interface Props {
+  author: Author;
+  size?: number;
+}
+
+const { author, size = 28 } = Astro.props;
+const { name, github, color } = author.data;
+---
+
+<span class="mark" style={`--c:${color};--s:${size}px`} aria-hidden="true">
+  {initials(name)}
+  {github && <img src={`https://github.com/${github}.png?size=${size * 2}`} alt="" width={size} height={size} loading="lazy" onerror="this.remove()" />}
+</span>
+
+<style>
+  .mark {
+    width: var(--s);
+    height: var(--s);
+    flex: none;
+    border-radius: 50%;
+    background: var(--c);
+    color: #fff;
+    font-family: var(--mono);
+    font-size: calc(var(--s) * 0.36);
+    display: inline-grid;
+    place-items: center;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 0 0 2px var(--bg), 0 0 0 3.5px var(--c);
+  }
+
+  img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+</style>

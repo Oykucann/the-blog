@@ -1,0 +1,43 @@
+---
+interface Props {
+  caption?: string;
+  /** Source of the data, shown on the right of the caption. */
+  source?: string;
+  width?: 'text' | 'wide';
+}
+
+const { caption, source, width = 'text' } = Astro.props;
+---
+
+<figure class="table" data-width={width}>
+  <div class="scroll" tabindex="0" role="region" aria-label={caption ?? 'Table'}>
+    <slot />
+  </div>
+  {
+    (caption || source) && (
+      <figcaption class="caption">
+        <span>
+          <span class="caption-label">Table <span class="n" /></span>
+          {caption}
+        </span>
+        {source && <span class="caption-credit">{source}</span>}
+      </figcaption>
+    )
+  }
+</figure>
+
+<style>
+  .table {
+    counter-increment: table;
+  }
+
+  .scroll {
+    overflow-x: auto;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .n::after {
+    content: counter(table) '.';
+  }
+</style>

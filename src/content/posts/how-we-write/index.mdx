@@ -1,0 +1,221 @@
+---
+title: How we write here
+description: A short reference for everyone who writes on this blog. Every building block you can use in a post, with the exact syntax.
+date: 2026-09-10
+authors:
+  - { author: oyku, roles: [writing] }
+  - { author: deniz, roles: [editing, review] }
+tags: [guide]
+---
+
+import ciDuration from '../three-weeks-in-a-monorepo/ci-duration.png';
+
+Every post is a folder under `src/content/posts/`. The folder name becomes the address, and `index.mdx` inside it holds the text. Images live in the same folder.
+
+This page is also the component reference. Each section shows the result first and the syntax right after it.
+
+## Authors and credits
+
+Everyone who worked on a post goes into the front matter with their role. The byline at the top lists every person once, in alphabetical order. The credits at the bottom group people by role. Nothing measures who wrote more.
+
+```yaml
+authors:
+  - { author: oyku, roles: [writing] }
+  - { author: deniz, roles: [editing, review] }
+```
+
+Roles: `writing`, `editing`, `code`, `illustration`, `research`, `review`. The author id is the file name in `src/content/authors/`. A typo in an id stops the build, so a post can never credit someone who does not exist.
+
+## Signed sections
+
+By default the text belongs to everyone. If you want a section to carry your name, wrap it in `<Signed>`. Only then does your colour and name appear next to it.
+
+<Signed by="oyku">
+
+This paragraph is signed. Nothing else on this page is.
+
+</Signed>
+
+```mdx
+<Signed by="oyku">
+
+Your paragraphs here. Leave a blank line after the opening tag and before the closing tag.
+
+</Signed>
+```
+
+## Figures and captions
+
+Import the image at the top of the post, then place it with `<Figure>`. Alt text is required: the build fails without it. Captions are numbered automatically.
+
+<Figure
+  src={ciDuration}
+  alt="Bar chart. Median CI duration was 41 minutes before and 9 minutes after."
+  caption="A figure in the text column."
+  credit="Data: CI logs"
+/>
+
+```mdx
+import chart from './chart.png';
+
+<Figure
+  src={chart}
+  alt="What the image shows, for people who cannot see it."
+  caption="Shown under the image, after 'Figure 1.'"
+  credit="Who made it or where it comes from"
+  width="text"
+/>
+```
+
+`width` can be `text` (default), `wide`, or `full` for edge to edge.
+
+## Tables
+
+A plain Markdown table works anywhere. Wrap it in `<Table>` to give it a numbered caption and a source.
+
+<Table caption="Where each building block is useful." source="Our own convention">
+
+| Block        | Use it for                              | Numbered |
+| ------------ | --------------------------------------- | :------: |
+| `<Figure>`   | Images, charts, diagrams                |   yes    |
+| `<Table>`    | Data that readers compare row by row    |   yes    |
+| `<Terminal>` | Commands readers will type              |    no    |
+| `<CodeBlock>`| A function or file with its name        |    no    |
+
+</Table>
+
+```mdx
+<Table caption="What the table shows." source="Where the data comes from">
+
+| Column | Column |
+| ------ | -----: |
+| text   |     12 |
+
+</Table>
+```
+
+## Command line
+
+Use `<Terminal>` for commands. It stays dark in both themes. Start command lines with `$ ` so they are highlighted differently from output.
+
+<Terminal title="~/the-blog">
+
+```shellsession
+$ npm install
+$ npm run dev
+  astro  ready in 412 ms
+  Local  http://localhost:4321/the-blog/
+```
+
+</Terminal>
+
+````mdx
+<Terminal title="~/the-blog">
+
+```shellsession
+$ npm run dev
+```
+
+</Terminal>
+````
+
+## Functions and files
+
+A normal fenced code block is enough for short snippets. For a named function or file, wrap it in `<CodeBlock>`, optionally with a link to the full source.
+
+<CodeBlock title="src/utils/site.ts · readingTime()">
+
+```ts
+export function readingTime(body = ''): number {
+  const words = body.split(/\s+/).filter(Boolean).length;
+  return Math.max(1, Math.round(words / 230));
+}
+```
+
+</CodeBlock>
+
+````mdx
+<CodeBlock title="src/utils/site.ts" href="https://github.com/...">
+
+```ts
+export function readingTime() { … }
+```
+
+</CodeBlock>
+````
+
+## Drill-down boxes
+
+Use `<Details>` for material most readers can skip: a derivation, a long log, an edge case.
+
+<Details summary="Why drill-down boxes are closed by default">
+
+A reader who wants the detail will open it. A reader who does not can keep reading without scrolling past it. Add `open` to show one expanded.
+
+</Details>
+
+```mdx
+<Details summary="The line readers click">
+
+Hidden content, with any Markdown inside.
+
+</Details>
+```
+
+## References
+
+Use Markdown footnotes for sources.[^footnotes] They are collected into a numbered **References** list at the end of the post, with links back to where they were cited.
+
+```md
+A claim that needs a source.[^short-name]
+
+[^short-name]: Author, "Title". https://example.com
+```
+
+## Quotes
+
+A plain `>` line is a quiet inline quote.
+
+> Plain Markdown quotes look like this.
+
+Use `<Quote>` when you want to name the speaker and source, and `variant="pull"` to repeat a key line from the post in large type.
+
+<Quote by="Ursula K. Le Guin" source="Steering the Craft">
+The sound of the language is where it all begins.
+</Quote>
+
+<Quote variant="pull">
+Short sentences survive editing better than long ones.
+</Quote>
+
+```mdx
+<Quote by="Who said it" source="Where" href="https://…">
+The quote.
+</Quote>
+
+<Quote variant="pull">
+A line from this post, repeated for emphasis.
+</Quote>
+```
+
+## Notes
+
+<Note>
+Use a note for context that sits beside the main text.
+</Note>
+
+<Note type="warning">
+Use a warning when skipping it could cost the reader time or data.
+</Note>
+
+```mdx
+<Note type="note | tip | warning" title="Optional custom label">
+Text.
+</Note>
+```
+
+## Drafts
+
+Add `draft: true` to the front matter. Drafts show up when you run the site locally and never on the published site.
+
+[^footnotes]: GitHub Flavored Markdown spec, footnotes extension. https://github.github.com/gfm/

@@ -1,0 +1,104 @@
+---
+import '../styles/prose.css';
+import { Image } from 'astro:assets';
+import Base from './Base.astro';
+import Byline from '../components/Byline.astro';
+import Credits from '../components/Credits.astro';
+import { getCredits, getPostAuthors, type Post } from '../utils/posts';
+import { formatDate, readingTime } from '../utils/site';
+
+interface Props {
+  post: Post;
+}
+
+const { post } = Astro.props;
+const { title, description, date, updated, tags, cover, coverAlt, draft } = post.data;
+const authors = await getPostAuthors(post);
+const credits = await getCredits(post);
+---
+
+<Base title={title} description={description} type="article">
+  <article>
+    <header class="post-head container">
+      <p class="meta">
+        <time datetime={date.toISOString()}>{formatDate(date)}</time>
+        <span>{readingTime(post.body)} min read</span>
+        {tags.length > 0 && <span>{tags.join(' · ')}</span>}
+        {draft && <span class="draft">Draft · not published</span>}
+      </p>
+      <h1>{title}</h1>
+      <p class="dek">{description}</p>
+      <Byline authors={authors} />
+      {updated && <p class="updated">Updated {formatDate(updated)}</p>}
+    </header>
+
+    <div class="prose">
+      {
+        cover && coverAlt && (
+          <figure data-width="wide" class="cover">
+            <Image src={cover} alt={coverAlt} widths={[720, 960, 1440]} sizes="(max-width: 992px) 100vw, 960px" loading="eager" />
+          </figure>
+        )
+      }
+      <slot />
+      <Credits credits={credits} />
+    </div>
+  </article>
+</Base>
+
+<style>
+  .post-head {
+    max-width: calc(var(--text-width) + 32px);
+    padding-block: 3.5rem 2.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .meta {
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1.1rem;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+
+  .draft {
+    color: var(--accent);
+  }
+
+  h1 {
+    margin: 0;
+    font-size: var(--step-4);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+
+  .dek {
+    margin: 0 0 0.5rem;
+    font-family: var(--serif);
+    font-size: 1.2rem;
+    line-height: 1.55;
+    color: var(--muted);
+  }
+
+  .updated {
+    margin: 0;
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+
+  .cover :global(img) {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: var(--radius);
+  }
+
+  .prose :global(.credits) {
+    margin-top: 2.5rem;
+  }
+</style>

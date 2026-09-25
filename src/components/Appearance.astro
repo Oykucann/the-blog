@@ -1,0 +1,255 @@
+---
+const ACCENTS = [
+  { id: 'ink', label: 'Ink', light: '#3346c9', dark: '#97a5ff' },
+  { id: 'moss', label: 'Moss', light: '#2f7d4f', dark: '#82d1a0' },
+  { id: 'rust', label: 'Rust', light: '#c2410c', dark: '#ff9e6e' },
+  { id: 'plum', label: 'Plum', light: '#8e3aa8', dark: '#d7a0f2' },
+  { id: 'teal', label: 'Teal', light: '#0b7581', dark: '#6fd3dc' },
+  { id: 'graphite', label: 'Graphite', light: '#3d4452', dark: '#c6ccd7' },
+];
+const MODES = [
+  { id: 'light', label: 'Light' },
+  { id: 'dark', label: 'Dark' },
+  { id: 'system', label: 'System' },
+];
+---
+
+<div class="appearance">
+  <button type="button" class="trigger" popovertarget="appearance-panel" aria-label="Appearance settings">
+    <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true">
+      <circle cx="10" cy="10" r="7.25" fill="none" stroke="currentColor" stroke-width="1.5"></circle>
+      <path d="M10 2.75a7.25 7.25 0 0 1 0 14.5z" fill="currentColor"></path>
+    </svg>
+    <span>Appearance</span>
+  </button>
+
+  <div id="appearance-panel" popover class="panel">
+    <fieldset>
+      <legend>Mode</legend>
+      <div class="modes">
+        {MODES.map((m) => (
+          <label>
+            <input type="radio" name="appearance-mode" value={m.id} id={`mode-${m.id}`} />
+            <span>{m.label}</span>
+          </label>
+        ))}
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend>Accent colour</legend>
+      <div class="swatches">
+        {ACCENTS.map((a) => (
+          <label title={a.label} style={`--sw-light:${a.light};--sw-dark:${a.dark}`}>
+            <input type="radio" name="appearance-accent" value={a.id} id={`accent-${a.id}`} />
+            <span class="sw" aria-hidden="true"></span>
+            <span class="sr-only">{a.label}</span>
+          </label>
+        ))}
+      </div>
+    </fieldset>
+    <p class="hint">Saved in this browser only.</p>
+  </div>
+</div>
+
+<script>
+  const root = document.documentElement;
+  const media = matchMedia('(prefers-color-scheme: dark)');
+
+  function store(key: string, value: string) {
+    try {
+      localStorage.setItem(key, value);
+    } catch {
+      /* storage blocked: the choice still applies for this page view */
+    }
+  }
+
+  function applyMode(mode: string) {
+    const dark = mode === 'dark' || (mode === 'system' && media.matches);
+    root.dataset.mode = mode;
+    root.dataset.theme = dark ? 'dark' : 'light';
+  }
+
+  function sync() {
+    const mode = root.dataset.mode ?? 'system';
+    const accent = root.dataset.accent ?? 'ink';
+    document.querySelectorAll<HTMLInputElement>('input[name="appearance-mode"]').forEach((el) => {
+      el.checked = el.value === mode;
+    });
+    document.querySelectorAll<HTMLInputElement>('input[name="appearance-accent"]').forEach((el) => {
+      el.checked = el.value === accent;
+    });
+  }
+
+  document.addEventListener('change', (event) => {
+    const el = event.target as HTMLInputElement;
+    if (el.name === 'appearance-mode') {
+      applyMode(el.value);
+      store('the-blog:mode', el.value);
+    } else if (el.name === 'appearance-accent') {
+      root.dataset.accent = el.value;
+      store('the-blog:accent', el.value);
+    }
+  });
+
+  media.addEventListener('change', () => {
+    if ((root.dataset.mode ?? 'system') === 'system') applyMode('system');
+  });
+
+  sync();
+</script>
+
+<style>
+  .appearance {
+    position: relative;
+  }
+
+  .trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font: inherit;
+    font-size: 0.9rem;
+    color: var(--ink);
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 0.3rem 0.75rem 0.3rem 0.55rem;
+    cursor: pointer;
+    anchor-name: --appearance;
+  }
+
+  .trigger:hover {
+    border-color: var(--accent-line);
+  }
+
+  .trigger svg {
+    color: var(--accent);
+  }
+
+  .panel {
+    margin: 0;
+    inset: auto;
+    position-anchor: --appearance;
+    top: calc(anchor(bottom) + 8px);
+    right: anchor(right);
+    position-try-fallbacks: flip-block;
+    width: min(280px, calc(100vw - 32px));
+    padding: 1rem;
+    background: var(--surface);
+    color: var(--ink);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    box-shadow: 0 16px 40px -16px rgb(0 0 0 / 0.35);
+  }
+
+  /* Browsers without anchor positioning: pin the panel under the header. */
+  @supports not (anchor-name: --a) {
+    .panel {
+      top: 64px;
+      right: 16px;
+      position: fixed;
+    }
+  }
+
+  fieldset {
+    border: 0;
+    padding: 0;
+    margin: 0 0 1rem;
+  }
+
+  legend {
+    font-family: var(--mono);
+    font-size: var(--step--1);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+    padding: 0;
+  }
+
+  .modes {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 3px;
+    gap: 3px;
+  }
+
+  .modes label {
+    position: relative;
+  }
+
+  .modes input,
+  .swatches input {
+    position: absolute;
+    opacity: 0;
+    inset: 0;
+    margin: 0;
+    cursor: pointer;
+  }
+
+  .modes span {
+    display: block;
+    text-align: center;
+    font-size: 0.85rem;
+    padding: 0.35rem 0;
+    border-radius: 5px;
+  }
+
+  .modes input:checked + span {
+    background: var(--accent);
+    color: var(--on-accent);
+  }
+
+  .modes input:focus-visible + span,
+  .swatches input:focus-visible + .sw {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .swatches {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 8px;
+  }
+
+  .swatches label {
+    position: relative;
+    display: grid;
+    place-items: center;
+  }
+
+  .sw {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--sw-light);
+    box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.12);
+  }
+
+  :global(:root[data-theme='dark']) .sw {
+    background: var(--sw-dark);
+  }
+
+  .swatches input:checked + .sw {
+    box-shadow:
+      0 0 0 2px var(--surface),
+      0 0 0 4px var(--ink);
+  }
+
+  .hint {
+    margin: 0;
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+
+  @media (max-width: 520px) {
+    .trigger span {
+      display: none;
+    }
+    .trigger {
+      padding: 0.4rem;
+    }
+  }
+</style>

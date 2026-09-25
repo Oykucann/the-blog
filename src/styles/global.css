@@ -1,0 +1,219 @@
+/*
+ * Design tokens.
+ * Mode (light/dark) and accent are chosen by the reader in the Appearance panel
+ * and stored as data-theme / data-accent on <html>. See ThemeScript.astro.
+ */
+
+:root {
+  --serif: 'Literata', 'Iowan Old Style', Georgia, serif;
+  --sans: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+
+  --text-width: 68ch;
+  --wide-width: 60rem;
+  --radius: 6px;
+
+  /* type scale (1.2) */
+  --step--1: 0.833rem;
+  --step-0: 1rem;
+  --step-1: 1.2rem;
+  --step-2: 1.44rem;
+  --step-3: 1.728rem;
+  --step-4: clamp(2rem, 1.5rem + 2.4vw, 2.99rem);
+
+  /* accents: each has a light and a dark value */
+  --accent-light: #3346c9;
+  --accent-dark: #97a5ff;
+
+  /* light palette */
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --ink: #1a1d24;
+  --muted: #5e6472;
+  --line: #e1e4ea;
+  --code-bg: #f0f2f5;
+  --term-bg: #16181d;
+  --term-ink: #e3e6ec;
+  --accent: var(--accent-light);
+  --on-accent: #ffffff;
+
+  --accent-soft: color-mix(in oklab, var(--accent) 11%, var(--surface));
+  --accent-line: color-mix(in oklab, var(--accent) 45%, var(--line));
+
+  color-scheme: light;
+}
+
+:root[data-accent='moss'] { --accent-light: #2f7d4f; --accent-dark: #82d1a0; }
+:root[data-accent='rust'] { --accent-light: #c2410c; --accent-dark: #ff9e6e; }
+:root[data-accent='plum'] { --accent-light: #8e3aa8; --accent-dark: #d7a0f2; }
+:root[data-accent='teal'] { --accent-light: #0b7581; --accent-dark: #6fd3dc; }
+:root[data-accent='graphite'] { --accent-light: #3d4452; --accent-dark: #c6ccd7; }
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --bg: #121419;
+    --surface: #1a1d24;
+    --ink: #e6e8ee;
+    --muted: #9aa0ad;
+    --line: #2a2f3a;
+    --code-bg: #1f232b;
+    --term-bg: #0c0d10;
+    --accent: var(--accent-dark);
+    --on-accent: #111318;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme='dark'] {
+  --bg: #121419;
+  --surface: #1a1d24;
+  --ink: #e6e8ee;
+  --muted: #9aa0ad;
+  --line: #2a2f3a;
+  --code-bg: #1f232b;
+  --term-bg: #0c0d10;
+  --accent: var(--accent-dark);
+  --on-accent: #111318;
+  color-scheme: dark;
+}
+
+/* ---------- base ---------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: var(--step-0);
+  line-height: 1.6;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1;
+}
+
+img,
+svg,
+video {
+  max-width: 100%;
+  height: auto;
+}
+
+a {
+  color: var(--accent);
+  text-underline-offset: 0.18em;
+  text-decoration-thickness: 1px;
+}
+
+a:hover {
+  text-decoration-thickness: 2px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  text-wrap: balance;
+  line-height: 1.2;
+}
+
+code,
+kbd,
+pre {
+  font-family: var(--mono);
+}
+
+.container {
+  width: 100%;
+  max-width: calc(var(--wide-width) + 32px);
+  margin-inline: auto;
+  padding-inline: 16px;
+}
+
+.eyebrow {
+  font-family: var(--mono);
+  font-size: var(--step--1);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  left: 16px;
+  top: -40px;
+  background: var(--accent);
+  color: var(--on-accent);
+  padding: 6px 12px;
+  border-radius: var(--radius);
+  z-index: 10;
+}
+
+.skip-link:focus {
+  top: 8px;
+}
+
+/* Shiki dual themes: follow the active mode */
+.astro-code,
+.astro-code span {
+  color: var(--shiki-light);
+  font-style: var(--shiki-light-font-style);
+  font-weight: var(--shiki-light-font-weight);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .astro-code,
+  :root:not([data-theme='light']) .astro-code span {
+    color: var(--shiki-dark);
+    font-style: var(--shiki-dark-font-style);
+    font-weight: var(--shiki-dark-font-weight);
+  }
+}
+
+:root[data-theme='dark'] .astro-code,
+:root[data-theme='dark'] .astro-code span {
+  color: var(--shiki-dark);
+  font-style: var(--shiki-dark-font-style);
+  font-weight: var(--shiki-dark-font-weight);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

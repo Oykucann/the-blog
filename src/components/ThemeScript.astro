@@ -1,0 +1,18 @@
+---
+// Runs before first paint so the page never flashes the wrong theme.
+---
+<script is:inline>
+  (function () {
+    var root = document.documentElement;
+    var mode = 'system';
+    var accent = 'ink';
+    try {
+      mode = localStorage.getItem('the-blog:mode') || 'system';
+      accent = localStorage.getItem('the-blog:accent') || 'ink';
+    } catch (e) {}
+    var dark = mode === 'dark' || (mode === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
+    root.dataset.theme = dark ? 'dark' : 'light';
+    root.dataset.mode = mode;
+    root.dataset.accent = accent;
+  })();
+</script>

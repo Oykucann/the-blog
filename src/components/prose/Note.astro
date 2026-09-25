@@ -1,0 +1,50 @@
+---
+interface Props {
+  type?: 'note' | 'tip' | 'warning';
+  title?: string;
+}
+
+const { type = 'note', title } = Astro.props;
+const label = title ?? { note: 'Note', tip: 'Tip', warning: 'Warning' }[type];
+---
+
+<aside class={`note ${type}`}>
+  <p class="label">{label}</p>
+  <slot />
+</aside>
+
+<style>
+  .note {
+    --tone: var(--accent);
+    background: color-mix(in oklab, var(--tone) 8%, var(--surface));
+    border: 1px solid color-mix(in oklab, var(--tone) 30%, var(--line));
+    border-radius: var(--radius);
+    padding: 0.9rem 1.1rem;
+    font-family: var(--sans);
+    font-size: 0.97rem;
+    line-height: 1.6;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .tip {
+    --tone: #2f9e5a;
+  }
+
+  .warning {
+    --tone: #d9822b;
+  }
+
+  .note > :global(*) {
+    margin: 0;
+  }
+
+  .label {
+    font-family: var(--mono);
+    font-size: var(--step--1);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: color-mix(in oklab, var(--tone) 75%, var(--ink));
+  }
+</style>

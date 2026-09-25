@@ -1,0 +1,68 @@
+---
+import { getEntry } from 'astro:content';
+import { initials } from '../../utils/posts';
+
+interface Props {
+  /** Author id, the file name in src/content/authors without .yaml */
+  by: string;
+}
+
+const { by } = Astro.props;
+const author = await getEntry('authors', by);
+
+if (!author) {
+  throw new Error(`<Signed by="${by}"> does not match any file in src/content/authors/.`);
+}
+---
+
+<section class="signed" style={`--author:${author.data.color}`}>
+  <div class="body">
+    <slot />
+  </div>
+  <p class="sig">
+    <span class="mark" aria-hidden="true">{initials(author.data.name)}</span>
+    Written by {author.data.name}
+  </p>
+</section>
+
+<style>
+  .signed {
+    border-left: 2px solid var(--author);
+    padding-left: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .body {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .body > :global(*) {
+    margin: 0;
+  }
+
+  .sig {
+    margin: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--sans);
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+
+  .mark {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--author);
+    color: #fff;
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    display: grid;
+    place-items: center;
+  }
+</style>

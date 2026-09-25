@@ -1,0 +1,54 @@
+---
+interface Props {
+  /** File name or function name shown above the code. */
+  title: string;
+  /** Optional link to the full file in a repository. */
+  href?: string;
+}
+
+const { title, href } = Astro.props;
+---
+
+<div class="codeblock">
+  <div class="head">
+    <span class="title">{title}</span>
+    {href && <a href={href}>View source</a>}
+  </div>
+  <slot />
+</div>
+
+<style>
+  .codeblock {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--code-bg);
+  }
+
+  .head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    padding: 0.45rem 1.1rem;
+    border-bottom: 1px solid var(--line);
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--muted);
+    background: var(--surface);
+  }
+
+  .title {
+    color: var(--ink);
+  }
+
+  .head a {
+    font-family: var(--sans);
+  }
+
+  .codeblock :global(pre) {
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+  }
+</style>

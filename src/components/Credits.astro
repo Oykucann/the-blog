@@ -1,0 +1,90 @@
+---
+import type { CreditLine } from '../utils/posts';
+import { url } from '../utils/site';
+
+interface Props {
+  credits: CreditLine[];
+}
+
+const { credits } = Astro.props;
+---
+
+<section class="credits" aria-labelledby="credits-title">
+  <h2 id="credits-title" class="eyebrow">Credits</h2>
+  <dl>
+    {credits.map((line) => (
+      <div class="row">
+        <dt>{line.label}</dt>
+        <dd>
+          {line.people.map((p, i) => (
+            <>
+              <a href={url(`authors/${p.id}/`)}>{p.data.name}</a>
+              {i < line.people.length - 1 && ', '}
+            </>
+          ))}
+        </dd>
+      </div>
+    ))}
+  </dl>
+</section>
+
+<style>
+  .credits {
+    border-top: 1px solid var(--line);
+    padding-top: 1.25rem;
+    font-family: var(--sans);
+  }
+
+  .credits h2 {
+    margin: 0 0 0.9rem;
+    font-family: var(--mono);
+    font-size: var(--step--1);
+    font-weight: 400;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  dl {
+    margin: 0;
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: 9rem 1fr;
+    gap: 1rem;
+    align-items: baseline;
+  }
+
+  dt {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  dd {
+    margin: 0;
+    font-size: 1rem;
+  }
+
+  a {
+    color: var(--ink);
+    text-decoration-color: var(--line);
+  }
+
+  a:hover {
+    color: var(--accent);
+    text-decoration-color: currentColor;
+  }
+
+  @media (max-width: 480px) {
+    .row {
+      grid-template-columns: 1fr;
+      gap: 0.1rem;
+    }
+  }
+</style>

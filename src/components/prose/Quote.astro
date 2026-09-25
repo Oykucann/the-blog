@@ -1,0 +1,79 @@
+---
+interface Props {
+  /** Who said it. */
+  by?: string;
+  /** Where it was said: a talk, a book, an article. */
+  source?: string;
+  /** Link to the source. */
+  href?: string;
+  /** "pull" repeats a line from the post in large type. */
+  variant?: 'quote' | 'pull';
+}
+
+const { by, source, href, variant = 'quote' } = Astro.props;
+const cite = [by, source].filter(Boolean).join(', ');
+---
+
+<figure class={`q ${variant}`}>
+  <blockquote cite={href}>
+    <slot />
+  </blockquote>
+  {
+    cite && (
+      <figcaption>
+        {href ? <a href={href}>{cite}</a> : cite}
+      </figcaption>
+    )
+  }
+</figure>
+
+<style>
+  .q blockquote {
+    margin: 0;
+    border: 0;
+    padding: 0;
+    color: var(--ink);
+    font-style: normal;
+  }
+
+  .q blockquote > :global(*) {
+    margin: 0;
+  }
+
+  .quote {
+    border-left: 3px solid var(--accent);
+    padding-left: 1.2rem;
+  }
+
+  .quote blockquote {
+    font-size: 1.2rem;
+    line-height: 1.55;
+  }
+
+  .pull {
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    padding: 1.25rem 0;
+  }
+
+  .pull blockquote {
+    font-family: var(--sans);
+    font-size: var(--step-3);
+    font-weight: 500;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    color: var(--accent);
+    text-wrap: balance;
+  }
+
+  figcaption {
+    margin-top: 0.6rem;
+    font-family: var(--sans);
+    font-size: 0.88rem;
+    color: var(--muted);
+  }
+
+  figcaption::before {
+    content: '— ';
+  }
+</style>
