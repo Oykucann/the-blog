@@ -1,0 +1,63 @@
+---
+import AuthorMark from './AuthorMark.astro';
+import type { Author } from '../utils/posts';
+import { url } from '../utils/site';
+
+interface Props {
+  authors: Author[];
+  size?: 'small' | 'large';
+}
+
+const { authors, size = 'large' } = Astro.props;
+const markSize = size === 'large' ? 30 : 22;
+---
+
+<ul class={`byline ${size}`} aria-label="Authors">
+  {authors.map((a) => (
+    <li>
+      <AuthorMark author={a} size={markSize} />
+      {size === 'large' ? <a href={url(`authors/${a.id}/`)}>{a.data.name}</a> : <span>{a.data.name}</span>}
+    </li>
+  ))}
+</ul>
+
+<style>
+  .byline {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem 1.4rem;
+    font-family: var(--sans);
+  }
+
+  li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+  }
+
+  .large {
+    font-size: 0.95rem;
+  }
+
+  .small {
+    font-size: 0.85rem;
+    color: var(--muted);
+    gap: 0.4rem 1rem;
+  }
+
+  .small li {
+    gap: 0.4rem;
+  }
+
+  a {
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  a:hover {
+    color: var(--accent);
+  }
+</style>

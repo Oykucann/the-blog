@@ -1,0 +1,31 @@
+---
+import Base from '../layouts/Base.astro';
+import { url } from '../utils/site';
+---
+
+<Base title="Not found">
+  <div class="container nf">
+    <p class="eyebrow">404</p>
+    <h1>This page does not exist.</h1>
+    <p>It may have been renamed or never published. <a href={url('/')}>Go to the latest writing</a>.</p>
+  </div>
+</Base>
+
+<style>
+  .nf {
+    max-width: calc(46rem + 32px);
+    padding-top: 5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .nf p,
+  h1 {
+    margin: 0;
+  }
+
+  h1 {
+    font-size: var(--step-3);
+  }
+</style>

@@ -1,0 +1,88 @@
+---
+import Appearance from './Appearance.astro';
+import { SITE, url } from '../utils/site';
+
+const path = Astro.url.pathname;
+const links = [
+  { href: url('/'), label: 'Writing', match: (p: string) => p === url('/') || p.startsWith(url('posts')) },
+  { href: url('authors/'), label: 'Authors', match: (p: string) => p.startsWith(url('authors')) },
+];
+---
+
+<header class="site-header">
+  <div class="container inner">
+    <a class="wordmark" href={url('/')}>
+      {SITE.title}<span class="cursor" aria-hidden="true"></span>
+    </a>
+    <nav aria-label="Main">
+      {links.map((l) => (
+        <a href={l.href} aria-current={l.match(path) ? 'page' : undefined}>
+          {l.label}
+        </a>
+      ))}
+    </nav>
+    <Appearance />
+  </div>
+</header>
+
+<style>
+  .site-header {
+    border-bottom: 1px solid var(--line);
+    background: var(--bg);
+  }
+
+  .inner {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    min-height: 60px;
+  }
+
+  .wordmark {
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 1.05rem;
+    color: var(--ink);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    letter-spacing: -0.01em;
+  }
+
+  .cursor {
+    display: inline-block;
+    width: 0.55em;
+    height: 1.05em;
+    margin-left: 2px;
+    background: var(--accent);
+  }
+
+  nav {
+    display: flex;
+    gap: 1.25rem;
+    margin-right: auto;
+  }
+
+  nav a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.95rem;
+    padding-block: 4px;
+    border-bottom: 2px solid transparent;
+  }
+
+  nav a:hover {
+    color: var(--ink);
+  }
+
+  nav a[aria-current='page'] {
+    color: var(--ink);
+    border-bottom-color: var(--accent);
+  }
+
+  @media (max-width: 520px) {
+    .inner {
+      gap: 1rem;
+    }
+  }
+</style>

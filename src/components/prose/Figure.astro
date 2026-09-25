@@ -1,0 +1,71 @@
+---
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
+interface Props {
+  /** Import the image at the top of the post: `import chart from './chart.png'` */
+  src: ImageMetadata;
+  /** Required. Describe what the image shows for people who cannot see it. */
+  alt: string;
+  caption?: string;
+  /** Who made the image, or where it comes from. */
+  credit?: string;
+  width?: 'text' | 'wide' | 'full';
+}
+
+const { src, alt, caption, credit, width = 'text' } = Astro.props;
+
+if (!alt || !alt.trim()) {
+  throw new Error(`<Figure> is missing alt text for ${src?.src ?? 'an image'}. Describe what the image shows.`);
+}
+
+const sizes = {
+  text: '(max-width: 720px) 100vw, 720px',
+  wide: '(max-width: 992px) 100vw, 960px',
+  full: '100vw',
+}[width];
+---
+
+<figure class="figure" data-width={width}>
+  <Image src={src} alt={alt} sizes={sizes} widths={[480, 720, 960, 1440, 1920].filter((w) => w <= src.width)} />
+  {
+    (caption || credit || Astro.slots.has('default')) && (
+      <figcaption class="caption">
+        <span>
+          <span class="caption-label">Figure <span class="n" /></span>
+          {caption}
+          <slot />
+        </span>
+        {credit && <span class="caption-credit">{credit}</span>}
+      </figcaption>
+    )
+  }
+</figure>
+
+<style>
+  .figure {
+    counter-increment: figure;
+  }
+
+  .figure :global(img) {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: var(--radius);
+    background: var(--code-bg);
+  }
+
+  .figure[data-width='full'] :global(img) {
+    border-radius: 0;
+  }
+
+  .figure[data-width='full'] .caption {
+    padding-inline: 16px;
+    max-width: calc(var(--text-width) + 32px);
+    margin-inline: auto;
+  }
+
+  .n::after {
+    content: counter(figure) '.';
+  }
+</style>

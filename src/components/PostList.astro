@@ -1,0 +1,87 @@
+---
+import Byline from './Byline.astro';
+import { getPostAuthors, postUrlPath, type Post } from '../utils/posts';
+import { formatDate, readingTime, url } from '../utils/site';
+
+interface Props {
+  posts: Post[];
+}
+
+const { posts } = Astro.props;
+const rows = await Promise.all(posts.map(async (post) => ({ post, authors: await getPostAuthors(post) })));
+---
+
+<ol class="posts">
+  {rows.map(({ post, authors }) => (
+    <li>
+      <p class="meta">
+        <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
+        <span>{readingTime(post.body)} min read</span>
+        {post.data.draft && <span class="draft">Draft</span>}
+      </p>
+      <h3>
+        <a href={url(postUrlPath(post))}>{post.data.title}</a>
+      </h3>
+      <p class="desc">{post.data.description}</p>
+      <Byline authors={authors} size="small" />
+    </li>
+  ))}
+</ol>
+
+<style>
+  .posts {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  li {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    padding-block: 1.6rem;
+    border-bottom: 1px solid var(--line);
+  }
+
+  li:first-child {
+    padding-top: 0;
+  }
+
+  .meta {
+    margin: 0;
+    display: flex;
+    gap: 1rem;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+
+  .draft {
+    color: var(--accent);
+  }
+
+  h3 {
+    margin: 0;
+    font-size: var(--step-2);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  h3 a {
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  h3 a:hover {
+    color: var(--accent);
+  }
+
+  .desc {
+    margin: 0 0 0.35rem;
+    font-family: var(--serif);
+    color: var(--muted);
+    max-width: 62ch;
+  }
+</style>

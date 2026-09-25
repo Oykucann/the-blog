@@ -1,0 +1,74 @@
+---
+import Base from '../layouts/Base.astro';
+import PostList from '../components/PostList.astro';
+import { getPosts } from '../utils/posts';
+import { SITE } from '../utils/site';
+
+const posts = await getPosts();
+---
+
+<Base>
+  <div class="container home">
+    <section class="intro">
+      <p class="eyebrow">{SITE.title}</p>
+      <h1>Long-form writing, <span>written together.</span></h1>
+      <p class="lede">
+        Most posts here have more than one author. We draft in the same file, argue in pull requests and publish
+        under all our names.
+      </p>
+    </section>
+
+    <section aria-labelledby="latest">
+      <h2 id="latest" class="eyebrow">Latest writing</h2>
+      {posts.length > 0 ? <PostList posts={posts} /> : <p>No posts yet.</p>}
+    </section>
+  </div>
+</Base>
+
+<style>
+  .home {
+    max-width: calc(46rem + 32px);
+    display: flex;
+    flex-direction: column;
+    gap: 3.5rem;
+    padding-top: 4rem;
+  }
+
+  .intro {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .intro .eyebrow {
+    margin: 0;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: var(--step-4);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.08;
+  }
+
+  h1 span {
+    color: var(--accent);
+  }
+
+  .lede {
+    margin: 0;
+    font-family: var(--serif);
+    font-size: 1.2rem;
+    line-height: 1.6;
+    color: var(--muted);
+    max-width: 52ch;
+  }
+
+  h2 {
+    margin: 0 0 1.5rem;
+    font-weight: 400;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid var(--ink);
+  }
+</style>

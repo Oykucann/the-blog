@@ -1,0 +1,68 @@
+---
+interface Props {
+  /** The line readers click to expand. */
+  summary: string;
+  open?: boolean;
+}
+
+const { summary, open = false } = Astro.props;
+---
+
+<details class="details" open={open}>
+  <summary>{summary}</summary>
+  <div class="body">
+    <slot />
+  </div>
+</details>
+
+<style>
+  .details {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+  }
+
+  summary {
+    list-style: none;
+    cursor: pointer;
+    font-family: var(--sans);
+    font-weight: 500;
+    font-size: 1rem;
+    padding: 0.8rem 1rem;
+    display: flex;
+    gap: 0.6rem;
+    align-items: baseline;
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  summary::before {
+    content: '+';
+    font-family: var(--mono);
+    color: var(--accent);
+    width: 1ch;
+    flex: none;
+  }
+
+  .details[open] summary::before {
+    content: '−';
+  }
+
+  .details[open] summary {
+    border-bottom: 1px solid var(--line);
+  }
+
+  .body {
+    padding: 1rem 1rem 1.1rem 2.3rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    font-size: 1rem;
+  }
+
+  .body > :global(*) {
+    margin: 0;
+  }
+</style>
