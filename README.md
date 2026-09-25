@@ -28,14 +28,13 @@ Front matter:
 
 ```yaml
 ---
-title: Three weeks we lost moving to a monorepo
+title: Why our staging server has a name
 description: One or two sentences shown under the title and in link previews.
 date: 2026-09-18
 authors:
   - { author: oyku, roles: [writing] }
-  - { author: deniz, roles: [writing, editing] }
-  - { author: kerem, roles: [code] }
-tags: [infrastructure, ci]
+  - { author: tahsin, roles: [writing, code] }
+tags: [infrastructure]
 draft: false # true = visible in `npm run dev` only
 ---
 ```
@@ -63,14 +62,12 @@ These components are available in every post without importing them. Images stil
 Create `src/content/authors/<id>.yaml`. The file name is the id you use in posts.
 
 ```yaml
-name: Deniz Aydın
-title: Platform Engineer
-github: denizaydin # optional, used for the avatar and profile link
-color: "#1971c2"   # used for the byline mark and signed sections
+name: Tahsin Güner
+title: Engineer
+github: thsngnr   # optional, used for the avatar and profile link
+color: "#9c36b5"  # used for the byline mark and signed sections
 bio: One or two sentences.
 ```
-
-`deniz` and `kerem` are example authors, and `three-weeks-in-a-monorepo` is an example post. Replace them with real ones.
 
 ## Publishing setup (one time)
 
