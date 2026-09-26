@@ -1,0 +1,68 @@
+---
+import Base from '../../layouts/Base.astro';
+import PostList from '../../components/PostList.astro';
+import { getDrafts } from '../../utils/posts';
+
+const drafts = await getDrafts();
+---
+
+<Base title="Drafts" description="Posts that are not published yet." noindex>
+  <div class="container page">
+    <header>
+      <p class="eyebrow">Drafts</p>
+      <h1>Not published yet</h1>
+      <p class="lede">
+        Posts with <code>draft: true</code> in their front matter. This page is not linked from the site and is hidden
+        from search engines, but anyone with the link can read it. To publish a draft, set <code>draft: false</code>.
+      </p>
+    </header>
+
+    {drafts.length > 0 ? <PostList posts={drafts} /> : <p class="empty">No drafts right now.</p>}
+  </div>
+</Base>
+
+<style>
+  .page {
+    max-width: calc(46rem + 32px);
+    padding-top: 4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+  }
+
+  header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--ink);
+  }
+
+  header p,
+  h1 {
+    margin: 0;
+  }
+
+  h1 {
+    font-size: var(--step-3);
+    font-weight: 600;
+  }
+
+  .lede {
+    font-family: var(--serif);
+    color: var(--muted);
+    max-width: 60ch;
+  }
+
+  code {
+    font-size: 0.85em;
+    background: var(--code-bg);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 0.05em 0.3em;
+  }
+
+  .empty {
+    color: var(--muted);
+  }
+</style>
