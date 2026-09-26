@@ -24,6 +24,8 @@ npm run build    # type-checks, then builds to dist/
 4. Open a pull request. The **Check** workflow builds the site and fails if something is wrong, for example an unknown author or an image without alt text.
 5. Merge to `main`. The **Deploy** workflow publishes the site.
 
+A post with `draft: true` is not on the home page, author pages, RSS or sitemap. It is built at `/drafts/<folder-name>/` and listed on [`/drafts/`](https://oykucann.github.io/the-blog/drafts/), which is not linked from the site and tells search engines not to index it. Anyone with the link can still read it.
+
 Front matter:
 
 ```yaml
@@ -35,7 +37,7 @@ authors:
   - { author: oyku, roles: [writing] }
   - { author: tahsin, roles: [writing, code] }
 tags: [infrastructure]
-draft: false # true = visible in `npm run dev` only
+draft: false # true = only on the unlisted /drafts/ page
 ---
 ```
 

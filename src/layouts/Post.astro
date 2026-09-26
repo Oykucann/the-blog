@@ -5,7 +5,7 @@ import Base from './Base.astro';
 import Byline from '../components/Byline.astro';
 import Credits from '../components/Credits.astro';
 import { getCredits, getPostAuthors, type Post } from '../utils/posts';
-import { formatDate, readingTime } from '../utils/site';
+import { formatDate, readingTime, url } from '../utils/site';
 
 interface Props {
   post: Post;
@@ -17,7 +17,17 @@ const authors = await getPostAuthors(post);
 const credits = await getCredits(post);
 ---
 
-<Base title={title} description={description} type="article">
+<Base title={draft ? `Draft: ${title}` : title} description={description} type="article" noindex={draft}>
+  {
+    draft && (
+      <div class="draft-banner" role="note">
+        <div class="container">
+          <strong>Draft.</strong> Not published: it is not on the home page, in RSS or in search engines. Anyone
+          with this link can read it. <a href={url('drafts/')}>All drafts</a>
+        </div>
+      </div>
+    )
+  }
   <article>
     <header class="post-head container">
       <p class="meta">
@@ -67,6 +77,18 @@ const credits = await getCredits(post);
 
   .draft {
     color: var(--accent);
+  }
+
+  .draft-banner {
+    background: color-mix(in oklab, #d9822b 14%, var(--surface));
+    border-bottom: 1px solid color-mix(in oklab, #d9822b 40%, var(--line));
+    font-size: 0.9rem;
+    line-height: 1.5;
+    padding-block: 0.7rem;
+  }
+
+  .draft-banner a {
+    white-space: nowrap;
   }
 
   h1 {

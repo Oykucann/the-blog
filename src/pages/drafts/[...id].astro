@@ -2,11 +2,13 @@
 import { render } from 'astro:content';
 import PostLayout from '../../layouts/Post.astro';
 import * as prose from '../../components/prose';
-import { getPublishedPosts, type Post } from '../../utils/posts';
+import { getDrafts, type Post } from '../../utils/posts';
 
+// Drafts are built on the published site too, at unlisted /drafts/<id>/ URLs,
+// so teammates can read them and the build catches their errors early.
 export async function getStaticPaths() {
-  const posts = await getPublishedPosts();
-  return posts.map((post) => ({ params: { id: post.id }, props: { post } }));
+  const drafts = await getDrafts();
+  return drafts.map((post) => ({ params: { id: post.id }, props: { post } }));
 }
 
 interface Props {
