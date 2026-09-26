@@ -2,6 +2,7 @@
 import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import AuthorMark from '../../components/AuthorMark.astro';
+import SocialLinks from '../../components/SocialLinks.astro';
 import { url } from '../../utils/site';
 
 const authors = (await getCollection('authors')).sort((a, b) => a.data.name.localeCompare(b.data.name, 'en'));
@@ -17,10 +18,11 @@ const authors = (await getCollection('authors')).sort((a, b) => a.data.name.loca
       {authors.map((a) => (
         <li>
           <AuthorMark author={a} size={44} />
-          <div>
+          <div class="who">
             <h2><a href={url(`authors/${a.id}/`)}>{a.data.name}</a></h2>
             {a.data.title && <p class="title">{a.data.title}</p>}
           </div>
+          <SocialLinks author={a} />
         </li>
       ))}
     </ul>
@@ -69,6 +71,11 @@ const authors = (await getCollection('authors')).sort((a, b) => a.data.name.loca
     border: 1px solid var(--line);
     border-radius: 10px;
     background: var(--surface);
+  }
+
+  .who {
+    flex: 1;
+    min-width: 0;
   }
 
   h2 {

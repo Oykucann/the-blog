@@ -21,6 +21,7 @@ const authors = defineCollection({
     name: z.string(),
     title: z.string().optional(),
     github: z.string().optional(),
+    linkedin: z.url().optional(),
     // Used only for small markers: the byline dot and <Signed> sections.
     color: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Use a 6-digit hex color like "#1971c2"'),
     bio: z.string().optional(),

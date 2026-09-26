@@ -1,13 +1,27 @@
 ---
+import { getCollection } from 'astro:content';
+import SocialLinks from './SocialLinks.astro';
 import { SITE, url } from '../utils/site';
+
+const team = (await getCollection('authors')).sort((a, b) => a.data.name.localeCompare(b.data.name, 'en'));
 ---
 
 <footer class="site-footer">
+  <div class="container team">
+    <h2 class="eyebrow">The team</h2>
+    <ul>
+      {team.map((a) => (
+        <li>
+          <a class="name" href={url(`authors/${a.id}/`)}>{a.data.name}</a>
+          <SocialLinks author={a} />
+        </li>
+      ))}
+    </ul>
+  </div>
   <div class="container inner">
     <p>
       Written together, published from <a href={SITE.repo}>GitHub</a>.
-      Text <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>, code
-      <a href={`${SITE.repo}/blob/main/LICENSE`}>MIT</a>.
+      Text <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>, code <a href={`${SITE.repo}/blob/main/LICENSE`}>MIT</a>.
     </p>
     <nav aria-label="Footer">
       <a href={url('rss.xml')}>RSS</a>
@@ -22,6 +36,43 @@ import { SITE, url } from '../utils/site';
     margin-top: 5rem;
     font-size: 0.88rem;
     color: var(--muted);
+  }
+
+  .team {
+    padding-top: 1.75rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.75rem 2rem;
+  }
+
+  .team h2 {
+    margin: 0;
+    font-weight: 400;
+  }
+
+  .team ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 2rem;
+  }
+
+  .team li {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .team .name {
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .team .name:hover {
+    color: var(--accent);
   }
 
   .inner {
