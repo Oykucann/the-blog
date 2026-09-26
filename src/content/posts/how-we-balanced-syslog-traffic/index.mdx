@@ -1,0 +1,262 @@
+---
+title: "How We Stopped One Splunk Forwarder From Taking All the Traffic"
+description: Use of HAProxy, keepalived, and rsyslog to ensure even distribution of both syslog and HEC traffic on three Splunk Heavy Forwarders and how we managed to overcome TCP connection stickiness and absence of the source IP.
+date: 2026-09-26
+authors:
+  - { author: oyku, roles: [writing, code] }
+  - { author: tahsin, roles: [writing, code] }
+tags: [haproxy, keepalived, rsyslog, splunk, load-balancing]
+draft: true
+---
+
+import architecture from './architecture.png';
+
+## Why We Started
+
+This time it was all done by us together, both Öykü Can and Tahsin Güner, from our very first failure up until our last configuration change.
+
+We were using two Splunk Heavy Forwarders receiving syslog and HEC data but without any sort of load balancing between them, sources were choosing a specific HF and staying with that choice. Sometimes one of those HFs would be overloaded, whereas the other one would not have any work to do, until it became too much for the overloaded HF.
+
+## Why We Went With HAProxy and Why It Was Not Just Install and Configure
+
+Everything about the solution seemed straightforward: use HAProxy as the load balancer to distribute the requests evenly. And so, we did – only to quickly find out that the default configuration was insufficient. While the default configuration allowed for connections to be made and distributed successfully by HAProxy, it simply was not doing what we needed it to do.
+
+## What We Actually Built
+
+<Figure
+  src={architecture}
+  alt="Architecture diagram: syslog and HEC data is sent to a single VIP through keepalived, which forwards the traffic to whichever HAProxy is running; the HAProxy then load balances across three Splunk Heavy Forwarders, whereas the other HAProxy remains idle until a failover happens."
+  caption="The sources will see only one VIP at all times. What happens behind this – what HAProxy node is active, what HFs are up – is transparent to them."
+  width="wide"
+/>
+
+### Health checking
+
+There was no point in HAProxy trusting a backend based on its acceptance of connections; we needed the load balancer to know if syslog or HEC was individually healthy in the HF. The problem with having a single health check was that an error in one of the services on a particular HF could bring down the whole health check for the other service, despite the latter still being up and running.
+
+<Snippet file="how-we-balanced-syslog-traffic/haproxy.cfg" lines="38-44" />
+
+<Snippet file="how-we-balanced-syslog-traffic/haproxy.cfg" lines="95-97" />
+
+### Actually distributing the load
+
+HEC uses HTTP, therefore we ran HEC in `mode http` that distributes the load on a per-request basis – the most logical way to distribute the load.
+
+<Snippet file="how-we-balanced-syslog-traffic/haproxy.cfg" lines="80-84" />
+Syslog UDP uses a `log-forward` construct instead of a generic frontend/backend — HAProxy analyzes the syslog record and forwards it message-by-message with `balance roundrobin` choosing a new HF for each and every line.
+
+Syslog TCP originally worked different, and it got us into trouble. First attempt ran it as a regular `mode tcp` frontend/backend — an ordinary byte proxy with no notion that it deals with syslog. This is connection-based balancing — once an incoming connection is routed to an HF, it will stick to that one as long as the connection exists. Usually good, but it meant that one persistent sender could always park its traffic to one particular HF forever, and it also left us with no way to tag a true source IP to our message like we did on UDP side (more on this below).
+
+Solution was to treat TCP syslog not as "just a stream" and run it through the same `log-forward` construct as UDP - but provided by `bind` instead of `dgram-bind`. With HAProxy analyzing the syslog messages, we can now also balance per message here. We even tested this directly by maintaining one TCP connection without any reconnection for the entire duration of the test and found that it distributed its packets equally among the three HFs as well. This is definitely solving the issue at hand with regards to connection stickiness.
+
+<Snippet file="how-we-balanced-syslog-traffic/haproxy.cfg" lines="59-77" />
+
+<Note type="warning" title="A known rough edge">
+
+There is an open HAProxy issue where a `log-forward` TCP backend connection is not properly re-established upon drop in the middle of a connection, potentially blackholing the message in the brief period between these ([#3153](https://github.com/haproxy/haproxy/issues/3153), [#3342](https://github.com/haproxy/haproxy/issues/3342)). The `fastinter` / `observe layer4` / `error-limit` lines above serve to provide rapid detection and are no fix for this; deliberately killing rsyslog during testing of an HF remains something we want to do.
+
+</Note>
+
+### Getting the real client IP into every log line
+
+For being able to split the logs by the sources using directories further down the stream, it is important to identify who was actually sending these messages, as HAProxy sees not always what the correct IP should be inserted in the logs. And that is why the option `option host append` comes into play, where HAProxy rewrites the syslog HOSTNAME field to `original_host,real_client_ip`.
+
+<Snippet file="how-we-balanced-syslog-traffic/haproxy_syslog.conf" lines="19-29" />
+
+On the HF side, rsyslog just splits that field back apart on the comma to recover the IP and key its output directory on it.
+
+### keepalived and VIP
+
+Since our source IPs can only ever point to one destination IP address, we use keepalived to sit before both of our HAProxy nodes with a VIP and failover. We have a health check script that checks whether HAProxy itself is up and listening.
+
+<Snippet file="how-we-balanced-syslog-traffic/keepalived.conf" lines="7-13" />
+
+<Snippet file="how-we-balanced-syslog-traffic/check_haproxy.sh" />
+
+In addition, we have an additional "notify_master" hook which closes all hanging connections right away after the takeover of the VIP by a node - a cleanup procedure related to the HAProxy-node failover process but no longer responsible for the routine TCP balancing task (that's done by `log-forward` now).
+
+<Snippet file="how-we-balanced-syslog-traffic/keepalived.conf" lines="45-48" />
+
+### rsyslog
+
+At high volumes of traffic, HAProxy’s logging itself became so heavy that it broke through rate limiting performed by journald. We used a separate log relay instead, all going into one rotated file, with HAProxy itself assigning severity based on the response, meaning every line gets a proper severity designation without any parsing by rsyslog.
+
+<Snippet file="how-we-balanced-syslog-traffic/49-haproxy.conf" />
+
+<Terminal title="HF, after rotation">
+
+```shellsession
+$ ls -la /var/log/haproxy.log
+-rw-r----- 1 syslog adm  haproxy.log
+```
+
+</Terminal>
+
+### Ports and servers
+
+<Table caption="Ports opened between clients, HAProxy, and the Splunk HFs." source="Internal POC network design">
+
+| Port / protocol | Between | Purpose |
+| --- | --- | --- |
+| 514/TCP | clients → VIP → HF | syslog (TCP) |
+| 514/UDP | clients → VIP → HF | syslog (UDP) |
+| 8088/TCP (HTTP) | clients → VIP → HF | Splunk HEC |
+| 9002/TCP | HAProxy → HF | agent-check: syslog health only |
+| 9003/TCP | HAProxy → HF | agent-check: HEC health only |
+| 1024/TCP | HAProxy ↔ HAProxy | peers stick-table sync |
+| VRRP (IP protocol 112) | HAProxy ↔ HAProxy | keepalived heartbeat |
+| 8404/TCP | loopback only | HAProxy stats page |
+
+</Table>
+
+As far as the server is concerned, this included two HAProxy servers that share the VIP, and went from two HFs to three.
+
+### A few small tricks to steal
+
+It was actually a few small things that made the real difference, easily overlooked while scanning the configuration files above:
+- The relocation of TCP syslog from regular `mode tcp` frontend/backend into `log-forward` – the same hack that was done for UDP, but now solving two issues simultaneously: connection stickiness and source IP.
+- `option host append` – the real source IP is appended directly to the message payload of the syslog stream, both paths being affected since they use `log-forward`.
+- `http-response set-log-level` – HAProxy determines the log level based on response codes on the source side; no one down the pipeline needs to determine that from plain text.
+- Two ports for a single health check (9002 for syslog path and 9003 for HEC), not a single script – the simplest way to solve "an unrelated failure marks a healthy service down too."
+- keepalived's `notify_master` lifecycle hook executing the one-time cleanup script – utilizing the lifecycle event that is available for free to kick any stale connections off the node upon leaving the master state.
+
+## Taking It for a Spin
+
+With all the setup done, here is what we tried it out on, not the prettiest tests you might have seen:
+
+- Stopped rsyslog on one HF - traffic continued to flow through the other two nodes without any problems.
+- Stopped HEC on one HF - again, the same, traffic shifted to two nodes which were still operational flawlessly.
+- Stopped keepalived on the active HAProxy node - VIP transferred perfectly well, control passed to the second node seamlessly.
+- Stopped HAProxy itself on the active node - again, the same, traffic continued flowing.
+
+Nothing dramatic to report, which was exactly the point.
+
+<Terminal title="Agent-check response from hf3 during an HEC-only outage">
+
+```shellsession
+$ nc hf3 9002
+100% up ready # cpu=12 mem=34
+
+$ nc hf3 9003
+0% down # hec_8088_unhealthy
+```
+
+</Terminal>
+
+We conducted separate load balancing tests on a live and working environment with a specific number of test messages being sent for each protocol, while noting the exact number that reached each HF (HEC count verified through Splunk directly, and the others from each HF log):
+
+<Table caption="Sent vs. received per HF, across four separate test runs." source="Internal POC test runs">
+
+| Test | Sent | hf1 | hf2 | hf3 |
+| --- | --- | --- | --- | --- |
+| UDP, continuous | 1841 | 612 | 611 | 612 |
+| TCP, single connection | 3134 | 1042 | 1042 | 1041 |
+| TCP, 30 separate connections × 100 | 3000 | 1000 | 1000 | 1000 |
+| HEC, 30 sessions × 100 | 3000 | 1000 | 1000 | 1000 |
+
+</Table>
+
+The 30-session TCP and HEC trials ran exactly even with no loss. It’s the single-session TCP trial that's the key one to pay attention to: one session, no reconnects for the whole trial, and it still managed to be about perfectly distributed across all three HFs, directly verifying that shifting TCP syslog into `log-forward` was what solved the problem of TCP stickiness, not only IP source stickiness. The small discrepancies between "sent" and each HF total for the UDP and single-session trials (6 and 9 messages respectively) appear to be the result of timing in counting and not actually messages lost, since both 30-session trials (which we could count clean at the session level) ran exactly even.
+
+<Details summary="Raw output from all four test runs">
+
+<CodeBlock title="UDP, continuous">
+
+```text
+============================================
+ UDP TEST STOPPED
+============================================
+ Test ID      : HAPROXY_LB_TEST
+ Total sent   : 1841
+ Last seq     : 1841
+ Reconnects   : 0
+ Duration     : 37.09 sec
+ Average EPS  : 49.64
+============================================
+
+HF1 :  612 total
+HF2 : 611 total
+HF3 : 612 total
+```
+
+</CodeBlock>
+
+<CodeBlock title="TCP, single connection">
+
+```text
+============================================
+ TCP Single Connection TEST STOPPED
+============================================
+ Test ID      : HAPROXY_LB_TEST
+ Total sent   : 3134
+ Last seq     : 3134
+ Reconnects   : 0
+ Duration     : 63.17 sec
+ Average EPS  : 49.61
+============================================
+
+HF1 : 1042 total
+HF2 : 1042 total
+HF3 : 1041 total
+```
+
+</CodeBlock>
+
+<CodeBlock title="TCP, 30 separate connections x 100">
+
+```text
+============================================
+ TCP Multi Connection TEST STOPPED
+============================================
+ Test ID          : HAPROXY_LB_TEST
+ Sessions opened  : 30
+ Total sent       : 3000
+ Last seq         : 3000
+ Reconnects       : 0
+ Duration         : 30.46 sec
+ Average EPS      : 98.48
+============================================
+
+HF1 : 1000 total
+HF2 : 1000 total
+HF3 : 1000 total
+```
+
+</CodeBlock>
+
+<CodeBlock title="HEC, 30 sessions x 100 (counts confirmed directly in Splunk)">
+
+```text
+============================================
+HEC Multi TEST STOPPED
+============================================
+ Test ID          : HEC_BASELINE01
+ Sessions opened  : 30
+ Total sent       : 3000
+ Total failed     : 0
+ Last seq         : 3000
+ Reconnects       : 0
+ Duration         : 33.39 sec
+ Average EPS      : 89.85
+============================================
+
+HF1 : 1000 total
+HF2 : 1000 total
+HF3 : 1000 total
+```
+
+</CodeBlock>
+
+</Details>
+
+## Conclusion
+
+The load is distributed to all three HFs even for one TCP connection with a long life cycle, rather than only when there are many short TCP connections. Queue formation on each HF due to imbalance, that used to happen any time one HF had more packets than it should have, has improved quite a bit.
+
+<Details summary="What we could try next">
+
+We could purposely restart the rsyslog of an HF in the middle of the test with TCP traffic happening, in order to see if HAProxy's `log-forward` TCP backend is able to reconnect or gets stuck - a known issue upstream (as indicated in the callout "Actually distributing the load") that we have not deliberately triggered yet.
+
+</Details>
+
+If you have faced a similar challenge with syslog/HEC load distribution or you just want to criticize us, we would really appreciate it to hear from you. Contact [Öykü on LinkedIn](https://www.linkedin.com/in/öykü-can/) or [Tahsin on LinkedIn](https://www.linkedin.com/in/tahsinguner/).
