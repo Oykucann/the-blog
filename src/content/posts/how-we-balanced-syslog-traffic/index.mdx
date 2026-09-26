@@ -3,8 +3,8 @@ title: "How We Stopped One Splunk Forwarder From Taking All the Traffic"
 description: Use of HAProxy, keepalived, and rsyslog to ensure even distribution of both syslog and HEC traffic on three Splunk Heavy Forwarders and how we managed to overcome TCP connection stickiness and absence of the source IP.
 date: 2026-09-26
 authors:
-  - { author: oyku, roles: [writing, code] }
-  - { author: tahsin, roles: [writing, code] }
+  - { author: oyku, roles: [writing, code, review] }
+  - { author: tahsin, roles: [writing, code, review] }
 tags: [haproxy, keepalived, rsyslog, splunk, load-balancing]
 draft: true
 ---
@@ -259,4 +259,6 @@ We could purposely restart the rsyslog of an HF in the middle of the test with T
 
 </Details>
 
-If you have faced a similar challenge with syslog/HEC load distribution or you just want to criticize us, we would really appreciate it to hear from you. Contact [Öykü on LinkedIn](https://www.linkedin.com/in/öykü-can/) or [Tahsin on LinkedIn](https://www.linkedin.com/in/tahsinguner/).
+In case you've encountered a similar situation with the syslog/HEC load balancing, or you simply want to criticize us, we would really love to hear from you. Reach out to us!!! We would love to hear you! 🌸
+
+[Öykü on LinkedIn](https://www.linkedin.com/in/öykü-can/), [Tahsin on LinkedIn](https://www.linkedin.com/in/tahsinguner/).
