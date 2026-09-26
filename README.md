@@ -49,6 +49,7 @@ The post [How we write here](src/content/posts/how-we-write/index.mdx) is the fu
 | `<Table caption source>` | Wraps a Markdown table and gives it a numbered caption. |
 | `<Terminal title>` | Commands and their output. |
 | `<CodeBlock title href>` | A named function or file. |
+| `<Snippet file lines>` | Part of a real file from `code/`, with its line numbers and a link to the full file on GitHub. |
 | `<Details summary open>` | A collapsible drill-down box. |
 | `<Quote by source href variant>` | A quote with attribution, or `variant="pull"` for a pull quote. |
 | `<Note type title>` | A `note`, `tip` or `warning` box. |
@@ -56,6 +57,10 @@ The post [How we write here](src/content/posts/how-we-write/index.mdx) is the fu
 | `[^1]` footnotes | Collected into the **References** list at the end. |
 
 These components are available in every post without importing them. Images still need an import at the top of the post: `import chart from './chart.png'`.
+
+## Code for posts
+
+Put code that belongs to a post in `code/<post-folder>/`, not in the post itself, and show the relevant part with `<Snippet file="<post-folder>/file.ts" lines="12-30" />`. The post always shows the current version of the file, and the build fails if the file or line range no longer exists. The blog never runs or type-checks anything in `code/`, so any language works. See [code/README.md](code/README.md).
 
 ## Add an author
 
@@ -65,7 +70,7 @@ Create `src/content/authors/<id>.yaml`. The file name is the id you use in posts
 name: Tahsin Güner
 title: Engineer
 github: thsngnr   # optional, used for the avatar and profile link
-color: "#9c36b5"  # used for the byline mark and signed sections
+color: "#2b8fc2"  # used for the byline mark and signed sections
 bio: One or two sentences.
 ```
 
@@ -78,6 +83,7 @@ To use a custom domain, set `site` in `astro.config.mjs` to the domain, remove `
 ## Project layout
 
 ```
+code/               source code for posts, one folder per post
 src/
   content/
     authors/        one YAML file per person
@@ -89,3 +95,8 @@ src/
   styles/           design tokens (global.css) and article styles (prose.css)
   content.config.ts schema for posts and authors
 ```
+
+## Licence
+
+- Code in `code/` and the site's own source: [MIT](LICENSE).
+- Posts and their images in `src/content/posts/`: [CC BY 4.0](LICENSE-CONTENT.md).

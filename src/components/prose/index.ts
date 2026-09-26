@@ -6,3 +6,4 @@ export { default as Details } from './Details.astro';
 export { default as Quote } from './Quote.astro';
 export { default as Note } from './Note.astro';
 export { default as Signed } from './Signed.astro';
+export { default as Snippet } from './Snippet.astro';
