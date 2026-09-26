@@ -70,6 +70,7 @@ Create `src/content/authors/<id>.yaml`. The file name is the id you use in posts
 name: Tahsin Güner
 title: Engineer
 github: thsngnr   # optional, used for the avatar and profile link
+linkedin: https://www.linkedin.com/in/tahsinguner/   # optional
 color: "#2b8fc2"  # used for the byline mark and signed sections
 bio: One or two sentences.
 ```
