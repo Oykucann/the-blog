@@ -95,3 +95,8 @@ src/
   styles/           design tokens (global.css) and article styles (prose.css)
   content.config.ts schema for posts and authors
 ```
+
+## Licence
+
+- Code in `code/` and the site's own source: [MIT](LICENSE).
+- Posts and their images in `src/content/posts/`: [CC BY 4.0](LICENSE-CONTENT.md).

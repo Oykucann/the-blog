@@ -4,7 +4,11 @@ import { SITE, url } from '../utils/site';
 
 <footer class="site-footer">
   <div class="container inner">
-    <p>Written together, published from <a href={SITE.repo}>GitHub</a>.</p>
+    <p>
+      Written together, published from <a href={SITE.repo}>GitHub</a>.
+      Text <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>, code
+      <a href={`${SITE.repo}/blob/main/LICENSE`}>MIT</a>.
+    </p>
     <nav aria-label="Footer">
       <a href={url('rss.xml')}>RSS</a>
       <a href={url('authors/')}>Authors</a>
