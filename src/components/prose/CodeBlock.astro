@@ -4,15 +4,16 @@ interface Props {
   title: string;
   /** Optional link to the full file in a repository. */
   href?: string;
+  linkLabel?: string;
 }
 
-const { title, href } = Astro.props;
+const { title, href, linkLabel = 'View source' } = Astro.props;
 ---
 
 <div class="codeblock">
   <div class="head">
     <span class="title">{title}</span>
-    {href && <a href={href}>View source</a>}
+    {href && <a href={href}>{linkLabel}</a>}
   </div>
   <slot />
 </div>

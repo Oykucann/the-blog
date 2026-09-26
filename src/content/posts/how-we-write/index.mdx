@@ -144,6 +144,23 @@ export function readingTime() { … }
 </CodeBlock>
 ````
 
+## Code from the repository
+
+Long code does not belong in the text. Put the files in the repository's `code/` folder, in a subfolder named after your post, and show only the part that matters with `<Snippet>`. It reads the real file at build time, keeps its line numbers, and links to the full file on GitHub with those lines highlighted.
+
+<Snippet file="how-we-write/affected.ts" lines="16-29" />
+
+```mdx
+<Snippet file="how-we-write/affected.ts" lines="16-29" />
+```
+
+- `file` is the path inside `code/`. Any language works.
+- `lines` is optional: `"12"` for one line, `"12-30"` for a range, or leave it out for the whole file.
+- When the file changes, the post shows the new version on the next build. If the file is renamed or the range no longer exists, the build fails, so a post never shows a broken reference.
+- The files in `code/` are never run or type-checked by the blog. Add a `README.md` next to them if readers should be able to run them.
+
+For a large project with its own dependencies and tests, a separate repository is better. Link to it with `<CodeBlock href="…">` around a short excerpt.
+
 ## Drill-down boxes
 
 Use `<Details>` for material most readers can skip: a derivation, a long log, an edge case.
