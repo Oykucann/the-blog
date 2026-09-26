@@ -4,10 +4,25 @@ import { ROLES, type Role } from '../content.config';
 export type Post = CollectionEntry<'posts'>;
 export type Author = CollectionEntry<'authors'>;
 
-/** Published posts, newest first. Drafts are visible in `astro dev` only. */
+const newestFirst = (a: Post, b: Post) => b.data.date.valueOf() - a.data.date.valueOf();
+
+/**
+ * Posts for listings (home, author pages, RSS), newest first.
+ * Drafts are included only in `astro dev`; the published site lists them on /drafts/ alone.
+ */
 export async function getPosts(): Promise<Post[]> {
   const posts = await getCollection('posts', ({ data }) => import.meta.env.DEV || !data.draft);
-  return posts.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+  return posts.sort(newestFirst);
+}
+
+/** Published posts only. Each gets a page at /posts/<id>/. */
+export async function getPublishedPosts(): Promise<Post[]> {
+  return (await getCollection('posts', ({ data }) => !data.draft)).sort(newestFirst);
+}
+
+/** Drafts only. Each gets an unlisted, noindex page at /drafts/<id>/. */
+export async function getDrafts(): Promise<Post[]> {
+  return (await getCollection('posts', ({ data }) => data.draft)).sort(newestFirst);
 }
 
 /**
@@ -44,7 +59,7 @@ export async function getCredits(post: Post): Promise<CreditLine[]> {
 }
 
 export function postUrlPath(post: Post): string {
-  return `posts/${post.id}/`;
+  return post.data.draft ? `drafts/${post.id}/` : `posts/${post.id}/`;
 }
 
 export function initials(name: string): string {

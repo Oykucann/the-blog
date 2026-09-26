@@ -6,6 +6,7 @@ authors:
   - { author: oyku, roles: [writing] }
   - { author: tahsin, roles: [editing, review] }
 tags: [guide]
+draft: true
 ---
 
 import ciDuration from './ci-duration.png';
@@ -233,6 +234,6 @@ Text.
 
 ## Drafts
 
-Add `draft: true` to the front matter. Drafts show up when you run the site locally and never on the published site.
+Add `draft: true` to the front matter. A draft is left out of the home page, author pages, RSS and the sitemap. It is still built at `/drafts/<folder-name>/`, so teammates can read it before it goes out, and every draft is listed on `/drafts/`. That page is not linked from the site and asks search engines not to index it, but anyone with the link can open it. Set `draft: false` to publish.
 
 [^footnotes]: GitHub Flavored Markdown spec, footnotes extension. https://github.github.com/gfm/
