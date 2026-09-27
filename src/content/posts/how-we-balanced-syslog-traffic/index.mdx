@@ -5,6 +5,7 @@ date: 2026-09-26
 authors:
   - { author: oyku, roles: [writing, code, review] }
   - { author: tahsin, roles: [writing, code, review] }
+  - { author: yunus, roles: [support] }
 tags: [haproxy, keepalived, rsyslog, splunk, load-balancing]
 draft: true
 ---
@@ -14,6 +15,8 @@ import architecture from './architecture.png';
 ## Why We Started
 
 This time it was all done by us together, both Öykü Can and Tahsin Güner, from our very first failure up until our last configuration change.
+
+None of this would have happened without Yunus Orpak, though - he took on our other work while we chased this down, and that's what actually gave us the room to get it right.
 
 We were using two Splunk Heavy Forwarders receiving syslog and HEC data but without any sort of load balancing between them, sources were choosing a specific HF and staying with that choice. Sometimes one of those HFs would be overloaded, whereas the other one would not have any work to do, until it became too much for the overloaded HF.
 
