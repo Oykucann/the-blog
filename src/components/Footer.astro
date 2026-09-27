@@ -3,7 +3,7 @@ import { getCollection } from 'astro:content';
 import SocialLinks from './SocialLinks.astro';
 import { SITE, url } from '../utils/site';
 
-const team = (await getCollection('authors')).sort((a, b) => a.data.name.localeCompare(b.data.name, 'en'));
+const team = (await getCollection('authors', ({ data }) => data.team)).sort((a, b) => a.data.name.localeCompare(b.data.name, 'en'));
 ---
 
 <footer class="site-footer">

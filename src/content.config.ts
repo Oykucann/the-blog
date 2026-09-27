@@ -9,6 +9,9 @@ export const ROLES = {
   illustration: 'Illustrations',
   research: 'Research',
   review: 'Review',
+  // Did not write or build anything in the post, but the work would have been
+  // much harder without them. Shown in the credits only, not in the byline.
+  support: 'With support from',
 } as const;
 
 export type Role = keyof typeof ROLES;
@@ -25,6 +28,9 @@ const authors = defineCollection({
     // Used only for small markers: the byline dot and <Signed> sections.
     color: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Use a 6-digit hex color like "#1971c2"'),
     bio: z.string().optional(),
+    // false = someone outside the writing team, e.g. a supporter. They get an
+    // author page and appear in credits, but not in the footer or the authors list.
+    team: z.boolean().default(true),
   }),
 });
 

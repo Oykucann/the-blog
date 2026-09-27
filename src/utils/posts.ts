@@ -26,11 +26,12 @@ export async function getDrafts(): Promise<Post[]> {
 }
 
 /**
- * Everyone who worked on a post, each listed once.
+ * Everyone who worked on a post, each listed once, for the byline.
+ * People whose only role is `support` are left out; they appear in the credits.
  * Sorted by name so the byline never implies who did more.
  */
 export async function getPostAuthors(post: Post): Promise<Author[]> {
-  const refs = post.data.authors.map((a) => a.author);
+  const refs = post.data.authors.filter((a) => a.roles.some((r) => r !== 'support')).map((a) => a.author);
   const unique = refs.filter((r, i) => refs.findIndex((x) => x.id === r.id) === i);
   const entries = await getEntries(unique);
   return entries.sort((a, b) => a.data.name.localeCompare(b.data.name, 'en'));
@@ -44,7 +45,8 @@ export interface CreditLine {
 
 /** Credits grouped by role, in the fixed order defined by ROLES. */
 export async function getCredits(post: Post): Promise<CreditLine[]> {
-  const authors = await getPostAuthors(post);
+  const refs = post.data.authors.map((a) => a.author);
+  const authors = await getEntries(refs.filter((r, i) => refs.findIndex((x) => x.id === r.id) === i));
   const byId = new Map(authors.map((a) => [a.id, a]));
   return (Object.keys(ROLES) as Role[])
     .map((role) => ({
