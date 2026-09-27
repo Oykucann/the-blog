@@ -25,7 +25,11 @@ authors:
   - { author: tahsin, roles: [editing, review] }
 ```
 
-Roles: `writing`, `editing`, `code`, `illustration`, `research`, `review`. The author id is the file name in `src/content/authors/`. A typo in an id stops the build, so a post can never credit someone who does not exist.
+Roles: `writing`, `editing`, `code`, `illustration`, `research`, `review`, `support`.
+
+Use `support` for someone who did not write or build anything in the post, but without whom writing it or testing the work would have been much harder. They are thanked in the credits under "With support from" and are not listed in the byline. If they are not part of the writing team, add `team: false` to their author file so they stay out of the footer and the authors list.
+
+The author id is the file name in `src/content/authors/`. A typo in an id stops the build, so a post can never credit someone who does not exist.
 
 ## Signed sections
 

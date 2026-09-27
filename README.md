@@ -41,7 +41,7 @@ draft: false # true = only on the unlisted /drafts/ page
 ---
 ```
 
-Roles are `writing`, `editing`, `code`, `illustration`, `research` and `review`. You can also set `updated`, and a `cover` image with `coverAlt`.
+Roles are `writing`, `editing`, `code`, `illustration`, `research`, `review` and `support`. Use `support` for someone who did not write or build anything in the post but without whom the work would have been much harder, for example the person who gave you a test environment. They are thanked in the credits ("With support from") and are left out of the byline at the top. You can also set `updated`, and a `cover` image with `coverAlt`.
 
 The post [How we write here](src/content/posts/how-we-write/index.mdx) is the full reference for every building block, with its syntax.
 
@@ -75,6 +75,7 @@ github: thsngnr   # optional, used for the avatar and profile link
 linkedin: https://www.linkedin.com/in/tahsinguner/   # optional
 color: "#2b8fc2"  # used for the byline mark and signed sections
 bio: One or two sentences.
+team: true        # false for people outside the team, e.g. supporters: no footer or authors-list entry
 ```
 
 ## Publishing setup (one time)
